@@ -1,44 +1,105 @@
 import { fetchWeather } from './weatherApi.js';
 
 class WeatherApp {
-    constructor() {
-        this.searchBtn = document.getElementById('search-btn');
-        this.cityInput = document.getElementById('city-input');
-        this.weatherContainer = document.getElementById('weather-container');
-        this.historyList = document.getElementById('history-list');
-        this.searchHistory = [];
+  constructor() {
+    this.searchBtn = document.getElementById('search-btn');
+    this.cityInput = document.getElementById('city-input');
+    this.weatherContainer = document.getElementById('weather-container');
+    this.historyList = document.getElementById('history-list');
+    this.searchHistory = [];
 
-        this.init();
+    this.init();
+  };
+
+  init() {
+    this.searchBtn.addEventListener('click', () => this.handleSearch());
+    this.cityInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        this.handleSearch();
+      
+        this.cityInput.value = '';
+      }
+    });
+    this.historyList.addEventListener('click', (e) => this.handleHistoryClick(e));
+
+    // Check for city in URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const cityParams = urlParams.get('city');
+
+    if (cityParams) {
+      this.cityInput.value = cityParams;
+
+      this.handleSearch();
+    }
+  };
+
+  async handleSearch() {
+    const city = this.cityInput.value.trim();
+
+    if (city) {
+      try {
+        const result = await fetchWeather(city);
+
+        this.displayWeather(result);
+        this.addToHistory(result);
+        this.updateURL(result);
+      } catch (error) {
+        console.error('Error in handleSearch', error);
+
+        this.weatherContainer.innerHTML = `<p>An error occured. Please try again</p>`;
+      }
+    }
+  };
+
+  displayWeather(data) {
+    if (data.code === '404') {
+      this.weatherContainer.innerHTML = `<p>City not found. Please try again</p>`;
+
+      return;
     }
 
-    init() {
-        // TODO: Add event listeners
-        // TODO: Check for city in URL parameters
-    }
+    const weatherHtml = `
+      <h2>${data.name}, ${data.sys.country}</h2>
+      <p>Temperature: ${Math.round(data.main.temp - 273.15)} C</p>
+      <p>Weather: ${data.weather[0].description}</p>
+      <p>Humidity: ${data.main.humidity}%</p>
+      <p>Wind Speed: ${data.wind.speed} m/s</p>
+    `;
 
-    handleSearch() {
-        // TODO: Implement search functionality
-    }
+    this.weatherContainer.innerHTML = weatherHtml;
+  };
 
-    displayWeather(data) {
-        // TODO: Display weather data
-    }
+  addToHistory(city) {
+    if (!this.searchHistory.includes(city.name)) {
+      this.searchHistory.unshift(city.name);
 
-    addToHistory(city) {
-        // TODO: Add city to search history
-    }
+      if (this.searchHistory.length > 5) {
+        this.searchHistory.pop();
+      }
 
-    updateHistoryList() {
-        // TODO: Update the history list in the UI
+      this.updateHistoryList();
     }
+  };
 
-    handleHistoryClick(e) {
-        // TODO: Handle clicks on history items
-    }
+  updateHistoryList() {
+    this.historyList.innerHTML = this.searchHistory
+      .map(city => `<li>${city}</li>`)
+      .join('');
+  };
 
-    updateURL(city) {
-        // TODO: Update URL with the searched city
+  handleHistoryClick(e) {
+    if (e.target.tagName === 'LI') {
+      this.cityInput.value = e.target.textContent;
+
+      this.handleSearch();
     }
-}
+  };
+
+  updateURL(city) {
+    const url = new URL(window.location);
+    url.searchParams.set('city', city.name);
+    window.history.pushState({}, '', url);
+  };
+};
 
 const app = new WeatherApp();
