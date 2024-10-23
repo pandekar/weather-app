@@ -1,5 +1,7 @@
 import { fetchWeather } from './weatherApi.js';
 
+const STORAGE_KEY = 'WEATHER_APP';
+
 class WeatherApp {
   constructor() {
     this.searchBtn = document.getElementById('search-btn');
@@ -31,6 +33,26 @@ class WeatherApp {
 
       this.handleSearch();
     }
+
+    if (this.isLocalStorageExist()) {
+      this.loadLocalStorage();
+    }
+  };
+
+  isLocalStorageExist() {
+    if (typeof (Storage) === undefined) {
+      alert('your browser does not support local storage');
+      return false;
+    }
+  
+    return true;
+  };
+
+  loadLocalStorage() {
+    const parsedData = JSON.parse(localStorage.getItem(STORAGE_KEY));
+
+    this.searchHistory = [...parsedData];
+    this.updateHistoryList();
   };
 
   async handleSearch() {
@@ -70,14 +92,20 @@ class WeatherApp {
   };
 
   addToHistory(city) {
-    if (!this.searchHistory.includes(city.name)) {
-      this.searchHistory.unshift(city.name);
-
-      if (this.searchHistory.length > 5) {
-        this.searchHistory.pop();
+    if (city.code !== '404') {
+      if (!this.searchHistory.includes(city.name)) {
+        this.searchHistory.unshift(city.name);
+  
+        if (this.searchHistory.length > 5) {
+          this.searchHistory.pop();
+        }
+  
+        this.updateHistoryList();
       }
-
-      this.updateHistoryList();
+  
+      if (this.isLocalStorageExist()) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.searchHistory));
+      }
     }
   };
 
