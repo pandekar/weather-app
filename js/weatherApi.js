@@ -7,11 +7,13 @@ export function fetchWeather(city) {
       if (!response.ok) {
         throw new Error('Weather data not found');
       }
+
       return response.json();
     })
     .then(data => data)
     .catch(error => {
       console.error('Error fetching weather data:', error);
-      return { cod: '404', message: error.message };
+
+      return { code: '404', message: error.message };
     });
 };
