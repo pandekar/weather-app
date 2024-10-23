@@ -98,8 +98,16 @@ class WeatherApp {
       return;
     }
 
+    const weatherIcon = data.weather[0].icon;
+    const weatherDescription = data.weather[0].description;
+
     const weatherHtml = `
-      <h2>${data.name}, ${data.sys.country}</h2>
+      <div class="result-title">
+        <h2>${data.name}, ${data.sys.country}</h2>
+        <img
+          src="https://openweathermap.org/img/wn/${weatherIcon}@2x.png"
+          alt="${weatherDescription}" width="64" height="64">
+      </div>
       <p>Temperature: ${Math.round(data.main.temp - 273.15)} C</p>
       <p>Weather: ${data.weather[0].description}</p>
       <p>Humidity: ${data.main.humidity}%</p>
