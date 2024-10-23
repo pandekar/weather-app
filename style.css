@@ -39,6 +39,16 @@ h1 {
   cursor: pointer;
 }
 
+#my-loc-btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #0f69e0;
+  color: white;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+}
+
 #weather-container {
   background-color: white;
   padding: 20px;

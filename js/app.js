@@ -1,4 +1,4 @@
-import { fetchWeather } from './weatherApi.js';
+import { fetchWeather, fetchCurrenLocationWeather } from './weatherApi.js';
 
 const STORAGE_KEY = 'WEATHER_APP';
 
@@ -9,6 +9,7 @@ class WeatherApp {
     this.weatherContainer = document.getElementById('weather-container');
     this.historyList = document.getElementById('history-list');
     this.searchHistory = [];
+    this.myLocationBtn = document.getElementById('my-loc-btn');
 
     this.init();
   };
@@ -23,6 +24,7 @@ class WeatherApp {
       }
     });
     this.historyList.addEventListener('click', (e) => this.handleHistoryClick(e));
+    this.myLocationBtn.addEventListener('click', () => this.getMyLocation());
 
     // Check for city in URL parameters
     const urlParams = new URLSearchParams(window.location.search);
@@ -36,6 +38,22 @@ class WeatherApp {
 
     if (this.isLocalStorageExist()) {
       this.loadLocalStorage();
+    }
+  };
+
+  getMyLocation() {
+    if (typeof navigator.geolocation !== undefined) {
+      try {
+        navigator.geolocation.getCurrentPosition(async (position) => {
+          const myLocation = await fetchCurrenLocationWeather(position.coords.latitude, position.coords.longitude);
+
+          this.cityInput.value = myLocation.name;
+
+          this.handleSearch();
+        });
+      } catch (error) {
+        console.error('Error with geolocation', error);
+      }
     }
   };
 
